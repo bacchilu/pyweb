@@ -35,6 +35,7 @@ class StoppableHTTPServer(BaseHTTPServer.HTTPServer):
         BaseHTTPServer.HTTPServer.server_bind(self)
         self.socket.settimeout(1)
         self.exit = multiprocessing.Event()
+        self.close = multiprocessing.Event()
 
     def get_request(self):
         while not self.exit.is_set():
@@ -47,10 +48,13 @@ class StoppableHTTPServer(BaseHTTPServer.HTTPServer):
 
     def stop(self):
         self.exit.set()
+        self.close.wait()
+        self.server_close()
 
     def serve(self):
         while not self.exit.is_set():
             self.handle_request()
+        self.close.set()
 
 
 class WebServer(object):
