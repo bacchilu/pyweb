@@ -10,6 +10,7 @@ Luca Bacchi <bacchilu@gmail.com> - http://www.lucabacchi.it
 """
 
 import multiprocessing
+import Queue
 
 
 class Consumer(object):
@@ -17,22 +18,26 @@ class Consumer(object):
     @classmethod
     def worker(cls):
         i = 1
-        while True:
-            item = cls.q.get()
-            if item is None:
-                return
-            print i
-            i += 1
+        while not cls.exit.is_set():
+            try:
+                item = cls.q.get(True, 1)
+                if item is None:
+                    return
+                print i
+                i += 1
+            except Queue.Empty:
+                pass
 
     @classmethod
     def start(cls, q):
         cls.q = q
+        cls.exit = multiprocessing.Event()
         cls.p = multiprocessing.Process(target=cls.worker)
         cls.p.start()
 
     @classmethod
     def stop(cls):
-        cls.q.put(None)
+        cls.exit.set()
         cls.p.join()
 
 

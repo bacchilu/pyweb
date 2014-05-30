@@ -28,8 +28,6 @@ class ServiceManager(object):
     def stopAll(cls):
         web.WebServer.stop()
         controller.Consumer.stop()
-        cls.q.close()
-        cls.q.join_thread()
 
 
 class Commander(cmd.Cmd):
