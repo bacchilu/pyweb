@@ -4,7 +4,7 @@
 """
 server.py - https://github.com/bacchilu/pyweb
 
-http://code.activestate.com/recipes/425210-simple-stoppable-server-using-socket-timeout/
+Web server multiprocessing
 
 Luca Bacchi <bacchilu@gmail.com> - http://www.lucabacchi.it
 """
@@ -17,6 +17,8 @@ import multiprocessing
 class GetHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_GET(self):
+        self.server.cmdQueue.put(self.client_address[0])
+
         self.send_response(200)
         self.send_header('Content-Type', 'text/html')
         self.end_headers()
@@ -51,18 +53,22 @@ class StoppableHTTPServer(BaseHTTPServer.HTTPServer):
         self.close.wait()
         self.server_close()
 
-    def serve(self):
+    def serve(self, q):
+        self.cmdQueue = q
         while not self.exit.is_set():
             self.handle_request()
+        self.cmdQueue.close()
+        self.cmdQueue.join_thread()
         self.close.set()
 
 
 class WebServer(object):
 
     @classmethod
-    def start(cls):
+    def start(cls, q):
         cls.httpd = StoppableHTTPServer(('127.0.0.1', 8080), GetHandler)
-        cls.p = multiprocessing.Process(target=cls.httpd.serve)
+        cls.p = multiprocessing.Process(target=cls.httpd.serve,
+                args=(q, ))
         cls.p.start()
 
     @classmethod
@@ -71,7 +77,3 @@ class WebServer(object):
         cls.p.join()
 
 
-if __name__ == '__main__':
-    WebServer.start()
-    raw_input('Press <RETURN> to stop server\n')
-    WebServer.stop()
