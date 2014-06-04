@@ -64,16 +64,32 @@ class StoppableHTTPServer(BaseHTTPServer.HTTPServer):
 
 class WebServer(object):
 
+    p = None
+
     @classmethod
     def start(cls, q):
+        if cls.p is not None and cls.p.is_alive():
+            return
+
         cls.httpd = StoppableHTTPServer(('127.0.0.1', 8080), GetHandler)
         cls.p = multiprocessing.Process(target=cls.httpd.serve,
                 args=(q, ))
         cls.p.start()
+        print 'web:', cls.p.pid
 
     @classmethod
     def stop(cls):
+        if cls.p is None or not cls.p.is_alive():
+            return
+
         cls.httpd.stop()
         cls.p.join()
+
+    @classmethod
+    def status(cls):
+        if cls.p is None or not cls.p.is_alive():
+            print 'web is down'
+        else:
+            print 'web:', cls.p.pid
 
 

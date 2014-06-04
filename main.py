@@ -18,16 +18,28 @@ import controller
 
 class ServiceManager(object):
 
-    @classmethod
-    def startAll(cls):
-        cls.q = multiprocessing.Queue()
-        web.WebServer.start(cls.q)
-        controller.Consumer.start(cls.q)
+    q = multiprocessing.Queue()
 
     @classmethod
-    def stopAll(cls):
-        web.WebServer.stop()
-        controller.Consumer.stop()
+    def start(cls, service):
+        if service == 'web':
+            web.WebServer.start(cls.q)
+        if service == 'controller':
+            controller.Consumer.start(cls.q)
+
+    @classmethod
+    def stop(cls, service):
+        if service == 'web':
+            web.WebServer.stop()
+        if service == 'controller':
+            controller.Consumer.stop()
+
+    @classmethod
+    def status(cls, service):
+        if service == 'web':
+            web.WebServer.status()
+        if service == 'controller':
+            controller.Consumer.status()
 
 
 class Commander(cmd.Cmd):
@@ -37,17 +49,34 @@ class Commander(cmd.Cmd):
         Avvia tutti i servizi o un servizio
         service={web|controller}"""
 
-        ServiceManager.startAll()
+        if service in ['all', '']:
+            ServiceManager.start('web')
+            ServiceManager.start('controller')
+        else:
+            ServiceManager.start(service)
 
-    def do_stop(self, line):
+    def do_stop(self, service):
         """stop [service]
-        Arresta tutti i servizi o un servizio"""
+        Arresta tutti i servizi o un servizio
+        service={web|controller}"""
 
-        ServiceManager.stopAll()
+        if service in ['all', '']:
+            ServiceManager.stop('web')
+            ServiceManager.stop('controller')
+        else:
+            ServiceManager.stop(service)
+
+    def do_status(self, service):
+        """status [service]
+        Info su un particolare servizio
+        service={web|controller}"""
+
+        ServiceManager.status(service)
 
     def do_exit(self, line):
         """Esce"""
 
+        ServiceManager.stop('all')
         return True
 
 
