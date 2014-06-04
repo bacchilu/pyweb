@@ -26,6 +26,9 @@ class ServiceManager(object):
             web.WebServer.start(cls.q)
         if service == 'controller':
             controller.Consumer.start(cls.q)
+        if service in ['all', '']:
+            web.WebServer.start(cls.q)
+            controller.Consumer.start(cls.q)
 
     @classmethod
     def stop(cls, service):
@@ -33,12 +36,18 @@ class ServiceManager(object):
             web.WebServer.stop()
         if service == 'controller':
             controller.Consumer.stop()
+        if service in ['all', '']:
+            web.WebServer.stop()
+            controller.Consumer.stop()
 
     @classmethod
     def status(cls, service):
         if service == 'web':
             web.WebServer.status()
         if service == 'controller':
+            controller.Consumer.status()
+        if service in ['all', '']:
+            web.WebServer.status()
             controller.Consumer.status()
 
 
@@ -49,11 +58,7 @@ class Commander(cmd.Cmd):
         Avvia tutti i servizi o un servizio
         service={web|controller}"""
 
-        if service in ['all', '']:
-            ServiceManager.start('web')
-            ServiceManager.start('controller')
-        else:
-            ServiceManager.start(service)
+        ServiceManager.start(service)
         self.do_status(service)
 
     def do_stop(self, service):
@@ -61,11 +66,7 @@ class Commander(cmd.Cmd):
         Arresta tutti i servizi o un servizio
         service={web|controller}"""
 
-        if service in ['all', '']:
-            ServiceManager.stop('web')
-            ServiceManager.stop('controller')
-        else:
-            ServiceManager.stop(service)
+        ServiceManager.stop(service)
         self.do_status(service)
 
     def do_status(self, service):
@@ -73,11 +74,7 @@ class Commander(cmd.Cmd):
         Info su un particolare servizio
         service={web|controller}"""
 
-        if service in ['all', '']:
-            ServiceManager.status('web')
-            ServiceManager.status('controller')
-        else:
-            ServiceManager.status(service)
+        ServiceManager.status(service)
 
     def do_restart(self, service):
         """stop [service]
