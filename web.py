@@ -75,7 +75,6 @@ class WebServer(object):
         cls.p = multiprocessing.Process(target=cls.httpd.serve,
                 args=(q, ))
         cls.p.start()
-        print 'web:', cls.p.pid
 
     @classmethod
     def stop(cls):

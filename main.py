@@ -54,6 +54,7 @@ class Commander(cmd.Cmd):
             ServiceManager.start('controller')
         else:
             ServiceManager.start(service)
+        self.do_status(service)
 
     def do_stop(self, service):
         """stop [service]
@@ -65,18 +66,31 @@ class Commander(cmd.Cmd):
             ServiceManager.stop('controller')
         else:
             ServiceManager.stop(service)
+        self.do_status(service)
 
     def do_status(self, service):
         """status [service]
         Info su un particolare servizio
         service={web|controller}"""
 
-        ServiceManager.status(service)
+        if service in ['all', '']:
+            ServiceManager.status('web')
+            ServiceManager.status('controller')
+        else:
+            ServiceManager.status(service)
+
+    def do_restart(self, service):
+        """stop [service]
+        Arresta tutti i servizi o un servizio
+        service={web|controller}"""
+
+        self.do_stop(service)
+        self.do_start(service)
 
     def do_exit(self, line):
         """Esce"""
 
-        ServiceManager.stop('all')
+        self.do_stop(line)
         return True
 
 

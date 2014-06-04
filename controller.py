@@ -39,7 +39,6 @@ class Consumer(object):
         cls.exit = multiprocessing.Event()
         cls.p = multiprocessing.Process(target=cls.worker)
         cls.p.start()
-        print 'controller:', cls.p.pid
 
     @classmethod
     def stop(cls):
