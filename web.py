@@ -12,7 +12,7 @@ Luca Bacchi <bacchilu@gmail.com> - http://www.lucabacchi.it
 import BaseHTTPServer
 import socket
 import multiprocessing
-import logging
+import logger
 
 
 class GetHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -27,11 +27,10 @@ class GetHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.wfile.close()
 
     def log_message(self, fmt, *args):
-        name = multiprocessing.current_process().name
         msg = '%s - - [%s] %s' % (self.client_address[0],
                                   self.log_date_time_string(), fmt
                                   % args)
-        logging.debug(':%s -> %s' % (name, msg))
+        logger.debug(msg)
 
 
 class StoppableHTTPServer(BaseHTTPServer.HTTPServer):

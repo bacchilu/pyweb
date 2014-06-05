@@ -11,7 +11,7 @@ Luca Bacchi <bacchilu@gmail.com> - http://www.lucabacchi.it
 
 import multiprocessing
 import Queue
-import logging
+import logger
 
 
 class Consumer(object):
@@ -26,8 +26,7 @@ class Consumer(object):
                 item = cls.q.get(True, 1)
                 if item is None:
                     return
-                name = multiprocessing.current_process().name
-                logging.debug(':%s -> %d' % (name, i))
+                logger.debug('%d' % i)
                 i += 1
             except Queue.Empty:
                 pass

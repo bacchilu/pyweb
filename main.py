@@ -11,11 +11,10 @@ Luca Bacchi <bacchilu@gmail.com> - http://www.lucabacchi.it
 
 import multiprocessing
 import cmd
-import logging
-logging.basicConfig(filename='logger.log', level=logging.DEBUG)
 
 import web
 import controller
+import logger
 
 
 class ServiceManager(object):
@@ -24,23 +23,27 @@ class ServiceManager(object):
 
     @classmethod
     def start(cls, service):
+        if service in ['all', '']:
+            cls.start('web')
+            cls.start('controller')
+            return
         if service == 'web':
             web.WebServer.start(cls.q)
         if service == 'controller':
             controller.Consumer.start(cls.q)
-        if service in ['all', '']:
-            web.WebServer.start(cls.q)
-            controller.Consumer.start(cls.q)
+        logger.debug('Avviato %s' % service)
 
     @classmethod
     def stop(cls, service):
+        if service in ['all', '']:
+            cls.stop('web')
+            cls.stop('controller')
+            return
         if service == 'web':
             web.WebServer.stop()
         if service == 'controller':
             controller.Consumer.stop()
-        if service in ['all', '']:
-            web.WebServer.stop()
-            controller.Consumer.stop()
+        logger.debug('Arrestato %s' % service)
 
     @classmethod
     def status(cls, service):
@@ -49,8 +52,8 @@ class ServiceManager(object):
         if service == 'controller':
             controller.Consumer.status()
         if service in ['all', '']:
-            web.WebServer.status()
-            controller.Consumer.status()
+            cls.status('web')
+            cls.status('controller')
 
 
 class Commander(cmd.Cmd):
