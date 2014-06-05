@@ -11,6 +11,8 @@ Luca Bacchi <bacchilu@gmail.com> - http://www.lucabacchi.it
 
 import multiprocessing
 import cmd
+import logging
+logging.basicConfig(filename='logger.log', level=logging.DEBUG)
 
 import web
 import controller
