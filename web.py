@@ -63,9 +63,11 @@ class StoppableHTTPServer(BaseHTTPServer.HTTPServer):
 
 
 class WebServerProcess(multiprocessing.Process):
+
     def __init__(self, q):
         multiprocessing.Process.__init__(self)
-        self.httpd = StoppableHTTPServer(('127.0.0.1', 8080), GetHandler)
+        self.httpd = StoppableHTTPServer(('127.0.0.1', 8080),
+                GetHandler)
         self.q = q
 
     def run(self):
