@@ -16,16 +16,16 @@ import threading
 import logging
 
 FORMAT = \
-    '%(asctime)s [pid %(process)5d|%(processName)-13s] %(levelname)-8s - %(message)s'
+    '%(asctime)s [pid %(process)5d|%(processName2)-13s] %(levelname)-8s - %(message)s'
 logging.basicConfig(filename='logger.log', level=logging.DEBUG,
                     format=FORMAT)
 
 
 def loggerWorker(q):
     while True:
-        (level, msg) = q.get()
+        (level, name, msg) = q.get()
         if level == 'debug':
-            logging.debug(msg)
+            logging.debug(msg, extra={'processName2': name})
 
 
 q = multiprocessing.Queue()
@@ -35,6 +35,7 @@ t.start()
 
 
 def debug(msg):
-    q.put(('debug', msg))
+    name = multiprocessing.current_process().name
+    q.put(('debug', name, msg))
 
 
