@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-server.py - https://github.com/bacchilu/pyweb
+commander.py - https://github.com/bacchilu/pyweb
 
-http://code.activestate.com/recipes/425210-simple-stoppable-server-using-socket-timeout/
+Cmd parser
 
 Luca Bacchi <bacchilu@gmail.com> - http://www.lucabacchi.it
 """
@@ -16,14 +16,10 @@ import web
 import controller
 
 
-def controllerFn(host, path):
-    if path == '/crash':
-        raise Exception('errore')
-
-
 class ServiceManager(object):
 
     q = multiprocessing.Queue()
+    controllerFn = None
 
     @classmethod
     def start(cls, service):
@@ -34,7 +30,7 @@ class ServiceManager(object):
         if service == 'web':
             web.WebServer.start(cls.q)
         if service == 'controller':
-            controller.Consumer.start(cls.q, controllerFn)
+            controller.Consumer.start(cls.q, cls.controllerFn)
 
     @classmethod
     def stop(cls, service):
@@ -59,6 +55,12 @@ class ServiceManager(object):
 
 
 class Commander(cmd.Cmd):
+
+    intro = 'help per una lista dei comandi'
+
+    def __init__(self, controllerFn):
+        cmd.Cmd.__init__(self)
+        ServiceManager.controllerFn = staticmethod(controllerFn)
 
     def do_start(self, service):
         """start [service]
@@ -98,6 +100,16 @@ class Commander(cmd.Cmd):
         return True
 
 
+def start(controllerFn):
+    Commander(controllerFn).cmdloop()
+
+
 if __name__ == '__main__':
-    print 'help per una lista dei comandi'
-    Commander().cmdloop()
+
+
+    def dummyFn(host, path):
+        if path == '/crash':
+            raise Exception('errore')
+
+
+    start(dummyFn)

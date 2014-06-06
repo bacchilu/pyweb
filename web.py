@@ -5,6 +5,8 @@
 web.py - https://github.com/bacchilu/pyweb
 
 Web server multiprocessing
+http://code.activestate.com/recipes/425210-simple-stoppable-server-using-socket-timeout/
+
 If the parent process seems not to be alive anymore, this process commits
 suicide
 (http://stackoverflow.com/questions/2542610/python-daemon-doesnt-kill-its-kids)
