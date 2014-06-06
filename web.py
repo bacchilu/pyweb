@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-server.py - https://github.com/bacchilu/pyweb
+web.py - https://github.com/bacchilu/pyweb
 
 Web server multiprocessing
+If the parent process seems not to be alive anymore, this process commits
+suicide
+(http://stackoverflow.com/questions/2542610/python-daemon-doesnt-kill-its-kids)
 
 Luca Bacchi <bacchilu@gmail.com> - http://www.lucabacchi.it
 """
@@ -12,6 +15,8 @@ Luca Bacchi <bacchilu@gmail.com> - http://www.lucabacchi.it
 import BaseHTTPServer
 import socket
 import multiprocessing
+import os
+
 import logger
 
 
@@ -50,10 +55,13 @@ class StoppableHTTPServer(BaseHTTPServer.HTTPServer):
 
     def serve(self, q):
         self.cmdQueue = q
-        while not self.exit.is_set():
+        while not self.exit.is_set() and self.isParentAlive():
             self.handle_request()
         self.cmdQueue.close()
         self.cmdQueue.join_thread()
+
+    def isParentAlive(self):
+        return os.getppid() == self.parentPID
 
 
 class WebServer(object):
@@ -61,9 +69,15 @@ class WebServer(object):
     p = None
 
     @classmethod
-    def worker(cls, exit, q):
+    def worker(
+        cls,
+        exit,
+        q,
+        parentPID,
+        ):
         httpd = StoppableHTTPServer(('127.0.0.1', 8080), GetHandler)
         httpd.exit = exit
+        httpd.parentPID = parentPID
         httpd.serve(q)
 
     @classmethod
@@ -73,7 +87,8 @@ class WebServer(object):
 
         cls.exit = multiprocessing.Event()
         cls.p = multiprocessing.Process(name='web', target=cls.worker,
-                args=(cls.exit, q))
+                args=(cls.exit, q, os.getpid()))
+        cls.p.daemon = True
         cls.p.start()
 
     @classmethod
