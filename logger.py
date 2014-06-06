@@ -26,6 +26,8 @@ def loggerWorker(q):
         (level, name, msg) = q.get()
         if level == 'debug':
             logging.debug(msg, extra={'processName2': name})
+        if level == 'exception':
+            logging.exception(msg, extra={'processName2': name})
 
 
 q = multiprocessing.Queue()
@@ -37,5 +39,10 @@ t.start()
 def debug(msg):
     name = multiprocessing.current_process().name
     q.put(('debug', name, msg))
+
+
+def exception(msg):
+    name = multiprocessing.current_process().name
+    q.put(('exception', name, msg))
 
 

@@ -15,12 +15,9 @@ Luca Bacchi <bacchilu@gmail.com> - http://www.lucabacchi.it
 import multiprocessing
 import Queue
 import os
+import traceback
 
 import logger
-
-
-def doFn(host, path):
-    logger.debug('%s %s' % (host, path))
 
 
 def isParentAlive(parentPID):
@@ -32,24 +29,26 @@ class Consumer(object):
     p = None
 
     @classmethod
-    def worker(cls, parentPID):
+    def worker(cls, parentPID, actionFn):
         while not cls.exit.is_set() and isParentAlive(parentPID):
             try:
                 (host, path) = cls.q.get(True, 1)
-                doFn(host, path)
+                actionFn(host, path)
             except Queue.Empty:
 
                 pass
+            except:
+                logger.exception(traceback.format_exc())
 
     @classmethod
-    def start(cls, q):
+    def start(cls, q, actionFn):
         if cls.p is not None and cls.p.is_alive():
             return
 
         cls.q = q
         cls.exit = multiprocessing.Event()
         cls.p = multiprocessing.Process(name='controller',
-                target=cls.worker, args=(os.getpid(), ))
+                target=cls.worker, args=(os.getpid(), actionFn))
         cls.p.daemon = True
         cls.p.start()
 
