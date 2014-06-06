@@ -38,7 +38,7 @@ class Consumer(object):
 
                 pass
             except:
-                logger.exception(traceback.format_exc())
+                logger.error(traceback.format_exc())
 
     @classmethod
     def start(cls, q, actionFn):
