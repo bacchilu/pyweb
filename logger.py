@@ -28,6 +28,8 @@ def loggerWorker(q):
             logging.debug(msg, extra={'processName2': name})
         if level == 'error':
             logging.error(msg, extra={'processName2': name})
+        if level == 'info':
+            logging.info(msg, extra={'processName2': name})
 
 
 q = multiprocessing.Queue()
@@ -44,5 +46,10 @@ def debug(msg):
 def error(msg):
     name = multiprocessing.current_process().name
     q.put(('error', name, msg))
+
+
+def info(msg):
+    name = multiprocessing.current_process().name
+    q.put(('info', name, msg))
 
 

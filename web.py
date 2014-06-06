@@ -91,6 +91,7 @@ class WebServer(object):
                 args=(cls.exit, q, os.getpid()))
         cls.p.daemon = True
         cls.p.start()
+        logger.info('Avviato web')
 
     @classmethod
     def stop(cls):
@@ -99,6 +100,7 @@ class WebServer(object):
 
         cls.exit.set()
         cls.p.join()
+        logger.info('Arrestato web')
 
     @classmethod
     def status(cls):

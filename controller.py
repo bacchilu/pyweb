@@ -33,6 +33,7 @@ class Consumer(object):
         while not cls.exit.is_set() and isParentAlive(parentPID):
             try:
                 (host, path) = cls.q.get(True, 1)
+                logger.debug('Evaluating %s %s' % (host, path))
                 actionFn(host, path)
             except Queue.Empty:
 
@@ -51,6 +52,7 @@ class Consumer(object):
                 target=cls.worker, args=(os.getpid(), actionFn))
         cls.p.daemon = True
         cls.p.start()
+        logger.info('Avviato controller')
 
     @classmethod
     def stop(cls):
@@ -59,6 +61,7 @@ class Consumer(object):
 
         cls.exit.set()
         cls.p.join()
+        logger.info('Arrestato controller')
 
     @classmethod
     def status(cls):

@@ -14,11 +14,9 @@ import cmd
 
 import web
 import controller
-import logger
 
 
 def controllerFn(host, path):
-    logger.debug('%s %s' % (host, path))
     if path == '/crash':
         raise Exception('errore')
 
@@ -37,7 +35,6 @@ class ServiceManager(object):
             web.WebServer.start(cls.q)
         if service == 'controller':
             controller.Consumer.start(cls.q, controllerFn)
-        logger.debug('Avviato %s' % service)
 
     @classmethod
     def stop(cls, service):
@@ -49,7 +46,6 @@ class ServiceManager(object):
             web.WebServer.stop()
         if service == 'controller':
             controller.Consumer.stop()
-        logger.debug('Arrestato %s' % service)
 
     @classmethod
     def status(cls, service):
