@@ -19,6 +19,10 @@ import os
 import logger
 
 
+def doFn(host, path):
+    logger.debug('%s %s' % (host, path))
+
+
 def isParentAlive(parentPID):
     return os.getppid() == parentPID
 
@@ -29,15 +33,12 @@ class Consumer(object):
 
     @classmethod
     def worker(cls, parentPID):
-        i = 1
         while not cls.exit.is_set() and isParentAlive(parentPID):
             try:
-                item = cls.q.get(True, 1)
-                if item is None:
-                    return
-                logger.debug('%d' % i)
-                i += 1
+                (host, path) = cls.q.get(True, 1)
+                doFn(host, path)
             except Queue.Empty:
+
                 pass
 
     @classmethod

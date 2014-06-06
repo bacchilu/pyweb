@@ -23,7 +23,7 @@ import logger
 class GetHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_GET(self):
-        self.server.cmdQueue.put(self.client_address[0])
+        self.server.cmdQueue.put((self.client_address[0], self.path))
 
         self.send_response(200)
         self.send_header('Content-Type', 'text/html')
@@ -75,6 +75,7 @@ class WebServer(object):
         q,
         parentPID,
         ):
+
         httpd = StoppableHTTPServer(('127.0.0.1', 8080), GetHandler)
         httpd.exit = exit
         httpd.parentPID = parentPID
