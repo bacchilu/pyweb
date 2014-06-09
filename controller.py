@@ -26,48 +26,51 @@ def isParentAlive(parentPID):
 
 class Consumer(object):
 
-    p = None
+    pool = None
 
     @classmethod
     def worker(cls, parentPID, actionFn):
+        logger.debug('Avviato %s'
+                     % multiprocessing.current_process().name)
         while not cls.exit.is_set() and isParentAlive(parentPID):
             try:
                 (host, path) = cls.q.get(True, 1)
                 logger.debug('Evaluating %s %s' % (host, path))
                 actionFn(host, path)
             except Queue.Empty:
-
                 pass
             except:
                 logger.error(traceback.format_exc())
+        logger.debug('Terminato %s'
+                     % multiprocessing.current_process().name)
 
     @classmethod
     def start(cls, q, actionFn):
-        if cls.p is not None and cls.p.is_alive():
+        if cls.pool is not None:
             return
 
         cls.q = q
         cls.exit = multiprocessing.Event()
-        cls.p = multiprocessing.Process(name='controller',
-                target=cls.worker, args=(os.getpid(), actionFn))
-        cls.p.daemon = True
-        cls.p.start()
+        cls.pool = multiprocessing.Pool(initializer=cls.worker,
+                initargs=(os.getpid(), actionFn))
         logger.info('Avviato controller')
 
     @classmethod
     def stop(cls):
-        if cls.p is None or not cls.p.is_alive():
+        if cls.pool is None:
             return
 
         cls.exit.set()
-        cls.p.join()
+        cls.pool.close()
+        cls.pool.join()
+        cls.pool = None
         logger.info('Arrestato controller')
 
     @classmethod
     def status(cls):
-        if cls.p is None or not cls.p.is_alive():
+        if cls.pool is None:
             print 'controller is down'
         else:
-            print 'controller:', cls.p.pid
+            print 'controller is up'
 
 
