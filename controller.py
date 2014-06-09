@@ -78,7 +78,6 @@ class Consumer(object):
         cls.pool = Pool(initializer=cls.worker, initargs=(os.getpid(),
                         actionFn))
         cls.pool.start()
-        logger.info('Avviato controller')
 
     @classmethod
     def stop(cls):
@@ -88,7 +87,6 @@ class Consumer(object):
         cls.exit.set()
         cls.pool.join()
         cls.pool = None
-        logger.info('Arrestato controller')
 
     @classmethod
     def status(cls):
