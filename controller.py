@@ -24,6 +24,30 @@ def isParentAlive(parentPID):
     return os.getppid() == parentPID
 
 
+class Pool(object):
+
+    def __init__(self, initializer=None, initargs=None):
+        self.workers = [multiprocessing.Process(name='PoolWorker-%d'
+                        % (i + 1), target=initializer, args=initargs)
+                        for i in range(multiprocessing.cpu_count())]
+        for w in self.workers:
+            w.daemon = True
+
+    def start(self):
+        for w in self.workers:
+            w.start()
+
+    def join(self):
+        for w in self.workers:
+            w.join()
+
+    def status(self):
+        return [p.pid for p in self.workers if p.is_alive()]
+
+    def is_alive(self):
+        return len(self.status()) != 0
+
+
 class Consumer(object):
 
     pool = None
@@ -46,31 +70,31 @@ class Consumer(object):
 
     @classmethod
     def start(cls, q, actionFn):
-        if cls.pool is not None:
+        if cls.pool is not None and cls.pool.is_alive():
             return
 
         cls.q = q
         cls.exit = multiprocessing.Event()
-        cls.pool = multiprocessing.Pool(initializer=cls.worker,
-                initargs=(os.getpid(), actionFn))
+        cls.pool = Pool(initializer=cls.worker, initargs=(os.getpid(),
+                        actionFn))
+        cls.pool.start()
         logger.info('Avviato controller')
 
     @classmethod
     def stop(cls):
-        if cls.pool is None:
+        if cls.pool is None or not cls.pool.is_alive():
             return
 
         cls.exit.set()
-        cls.pool.close()
         cls.pool.join()
         cls.pool = None
         logger.info('Arrestato controller')
 
     @classmethod
     def status(cls):
-        if cls.pool is None:
+        if cls.pool is None or not cls.pool.is_alive():
             print 'controller is down'
         else:
-            print 'controller is up'
+            print 'controller:', cls.pool.status()
 
 
